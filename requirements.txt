@@ -1,5 +1,2 @@
 Flask
-gunicorn
-tensorflow
-numpy
-Pillow
+Flask-Login
