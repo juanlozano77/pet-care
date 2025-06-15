@@ -1,0 +1,411 @@
+/* Reset básico */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Quicksand', sans-serif;
+}
+#Logo {
+  height: 40px; /* Aquí defines el alto que quieras para tu logo, por ejemplo 50px */
+  width: auto; /* ¡Esto es clave! El ancho se ajustará automáticamente para mantener la proporción */
+}
+/* Imágenes */
+.fondo {
+  height: 300px;
+  object-fit: cover;
+  object-position: 50% 25%;
+}
+
+/* Body */
+body {
+  background-color: #f8f4f9; /* Fondo rosado claro */
+  color: #292935;
+}
+
+/* Navbar */
+.navbar {
+  background-color: #e6cadf;
+  font-weight: bold;
+}
+
+#Logo {
+  width: 100px;
+}
+
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3e%3cpath stroke='rosybrown' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+.navbar-toggler {
+  border-width: 2px;
+  border-color: #ce578f;
+}
+
+.navbar-toggler:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Carrusel */
+.carousel-caption {
+  background-color: rgba(128, 128, 128, 0.473);
+  left: 0;
+  right: 0;
+}
+
+.carousel-indicators [data-bs-target] {
+  border-radius: 50%;
+  width: 10px;
+  height: 10px;
+  background-color: transparent;
+  border: solid 1px;
+  border-color: white;
+}
+
+.carousel-indicators .active {
+  opacity: 1;
+  background-color: aliceblue !important;
+  border-radius: 50% !important;
+}
+
+/* Barra de búsqueda y filtros */
+#checkbar {
+  background-color: #e6cadf;
+  padding-left: 1rem;
+  padding-top: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.barra {
+  /*width: 10vh !important;*/
+  background-color: #e6cadf !important;
+  color: rgb(0, 0, 0) !important;
+  border-radius: 60px;
+  border-color: #434351;
+  border-left: none;
+}
+
+.lupita {
+  background-color: #e6cadf;
+  border-radius: 60px 0px 0px 60px;
+  color: rgb(12, 6, 6);
+  border-right: none;
+  border-color: #434351;
+}
+
+.form-control::placeholder {
+  color: rgb(12, 6, 6);
+}
+
+.form-control:focus {
+  border-color: initial;
+  box-shadow: none;
+}
+
+.form-check-input {
+  margin-left: 0.2rem !important;
+  padding: 0.1rem;
+}
+
+/* Cards de eventos / servicios */
+.c_events {
+  background-color: #ac6291;
+  border-radius: 20px;
+  margin: 0.5rem;
+  width: 210px;
+}
+
+.card-body .c_events {
+  padding-left: 0;
+  padding-right: 0;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.card-body .c_events {
+  margin: 0;
+  padding: 0.3rem;
+  border: 0;
+  color: #292935;
+}
+
+.c_events .card-text {
+  color: #D3D3D3;
+}
+
+.card-body .c_events {
+  border-radius: 20px 20px 0px 0px;
+  height: 140px;
+  object-fit: cover;
+}
+
+.c_events img {
+  border-radius: 20px 20px 0px 0px;
+  height: 140px;
+  object-fit: cover;
+}
+
+.price {
+  display: contents;
+}
+
+.btn-primary {
+  align-self: end !important;
+  background-color: #d46398;
+  border: 0px;
+}
+
+.btn-primary:hover {
+  background-color: #ac5d83;
+}
+
+/* Footer */
+footer {
+  background-color: #8f6277;
+  border: 0;
+  margin-top: 2rem;
+  padding: 1rem 0;
+}
+
+.footer_der {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.icono {
+  padding-left: 1rem;
+  padding-right: 1rem;
+  color: #daaecf;
+}
+
+/* Loader y No Results */
+.no_found {
+  margin: 2rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.fill-space {
+  flex: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .details img {
+    min-width: 100%;
+    margin-left: 2rem;
+    margin-right: 2rem;
+  }
+}
+
+/* === FORMULARIOS === */
+
+.form-control,
+.form-select {
+  background-color: #e6cadf !important;
+  border: none !important;
+  color: #292935 !important;
+}
+
+.form-control::placeholder,
+.form-select {
+  color: rgb(12, 6, 6) !important;
+  opacity: 0.8;
+}
+
+.form-control:focus {
+  border-color: initial !important;
+  box-shadow: none !important;
+  background-color: #fff !important;
+  color: #000 !important;
+}
+
+.form-check-input:checked {
+  background-color: #c90a66 !important;
+  border-color: #c90a66 !important;
+}
+
+.btn-primary {
+  background-color: #e7586e !important;
+  border: none !important;
+}
+
+.btn-primary:hover {
+  background-color: #b9497f !important;
+}
+
+/* Botones de radio toggle */
+.btn-check:checked + .btn-outline-primary,
+.btn-check:active + .btn-outline-primary,
+.btn-check:focus + .btn-outline-primary {
+  background-color: #ce578f !important;
+  border-color: #ce578f !important;
+  color: white !important;
+}
+
+/* Tarjetas de formulario */
+.card-formulario {
+  background-color: #ac6291 !important;
+  border-radius: 20px !important;
+  padding: 1rem !important;
+  margin: 1rem auto !important;
+  max-width: 500px;
+}
+
+.card-title {
+  color: white !important;
+}
+
+.form-label {
+  font-weight: bold;
+  color: #292935;
+}
+
+/* Sección de campos adicionales (para cuidadores) */
+.campos-cuidador {
+  background-color: #f8f4f9;
+  padding: 1rem;
+  border-radius: 15px;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Estilos para login.html y register.html */
+main.container-fluid,
+main.container {
+  background-color: #f8f4f9;
+  padding: 2rem 1rem;
+}
+
+main h2 {
+  color: #ce578f;
+  font-weight: bold;
+}
+
+main .card {
+  border: none;
+}
+
+main .btn-group .btn {
+  background-color: #e6cadf;
+  color: #292935;
+  border-radius: 30px;
+  padding: 0.5rem 1.5rem;
+}
+
+main .btn-group .btn.active {
+  background-color: #ce578f;
+  color: white;
+}
+
+main .btn-group input[type="radio"]:checked + label {
+  background-color: #ce578f;
+  color: white;
+}
+
+/* Footer mejorado */
+footer .container-fluid {
+  background-color: #8f6277 !important;
+  color: white !important;
+}
+
+/* Formulario */
+.form-control,
+.form-select {
+  background-color: #e6cadf !important;
+  border: none !important;
+  color: #292935 !important;
+}
+
+.form-control::placeholder,
+.form-select {
+  color: rgb(12, 6, 6) !important;
+  opacity: 0.8;
+}
+
+.form-control:focus {
+  border-color: initial !important;
+  box-shadow: none !important;
+  background-color: #fff !important;
+  color: #000 !important;
+}
+
+.btn-check:checked + .btn-outline-primary {
+  background-color: #ce578f !important;
+  border-color: #ce578f !important;
+  color: white !important;
+}
+
+.card-formulario {
+  background-color: #ac6291;
+  border-radius: 20px;
+  padding: 1rem;
+}
+
+.card-title {
+  color: white;
+}
+
+.card-body {
+  color: #292935;
+}
+#map {
+  background-color: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  height: 500px;
+}
+
+.card:hover {
+  cursor: pointer;
+  transform: translateY(-5px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+    .barra {
+      background-color: #e6cadf !important;  
+      border: none !important;
+      color: #292935 !important;
+    }
+    .card-formulario {
+      background-color: #ac6291;
+      border-radius: 20px;
+      color: white;
+    }
+    .card-formulario .form-label {
+      color: #f8f4f9;
+      font-weight: 700;
+    }
+    .card-formulario h2 {
+      color: white !important;
+    }
+    .card-formulario hr {
+      border-top: 1px solid rgba(255,255,255,0.5);
+    }
+    #map-selection {
+      height: 350px;
+      margin-top: 1rem;
+      border-radius: 1rem;
+    }
+    .coord-display {
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+
+/* Navbar */
+.navbar {
+  background-color: #e6cadf !important;
+  font-weight: bold;
+}
+navbar-nav gap-2{
+  background-color: #e6cadf !important;
+  font-weight: bold;
+}
+
+.input-group{
+  background-color: #e6cadf !important;
+}
+

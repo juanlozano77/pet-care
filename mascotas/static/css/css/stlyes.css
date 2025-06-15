@@ -1,0 +1,11 @@
+/* Marcadores personalizados */
+.card-container img.marker-icon {
+    width: 32px;
+    height: 32px;
+  }
+  
+  #map {
+    background-color: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+  }

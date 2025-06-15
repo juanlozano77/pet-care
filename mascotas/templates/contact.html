@@ -1,0 +1,54 @@
+{% extends 'layout.html' %}
+
+{% block title %}Contacto{% endblock %}
+
+{% block content %}
+{# Este bloque de CSS aplica los estilos de foco y del botón que te gustaron #}
+ <link rel="stylesheet" href="{{ url_for('static', filename='./css/styles.css') }}">
+
+<div class="container" style="max-width: 680px;">
+    <div class="card-formulario shadow-sm mb-4 p-4">
+        <h2 class="text-center fw-bold mb-4" style="color: var(--accent-color);">Contáctanos</h2>
+        <p class="text-center text-muted mb-4">
+            ¿Tienes alguna pregunta o sugerencia? Completa el formulario y te responderemos a la brevedad.
+        </p>
+
+        {# Bloque para mostrar mensajes flash de Flask después de enviar #}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} text-center" role="alert">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('contact') }}">
+            <div class="mb-3">
+                <label for="name" class="form-label">Nombre</label>
+                <input type="text" class="form-control" id="name" name="name" placeholder="Escribe tu nombre completo" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Correo Electrónico</label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="ejemplo@correo.com" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="subject" class="form-label">Asunto</label>
+                <input type="text" class="form-control" id="subject" name="subject" placeholder="El motivo de tu consulta" required>
+            </div>
+
+            <div class="mb-4">
+                <label for="message" class="form-label">Mensaje</label>
+                <textarea class="form-control" id="message" name="message" style="height: 150px" placeholder="Escribe tu mensaje aquí..." required></textarea>
+            </div>
+            
+            <div class="d-grid">
+                <button type="submit" class="btn btn-accent btn-lg">Enviar Mensaje</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

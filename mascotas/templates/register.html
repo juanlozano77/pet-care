@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registrarse - PetCare & Health Stay</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"  rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">  
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='./css/styles.css') }}">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+  <style>
+  </style>
+</head>
+{% extends 'layout.html' %}
+
+{% block content %}
+
+  <main class="container py-5 my-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="card card-formulario shadow-sm mb-4 p-4">
+          <h2 class="text-center fw-bold mb-4" style="color: #ce578f;">Regístrate</h2>
+          
+          <div class="mb-3 text-center">
+            <label class="form-label fw-bold">¿Te registras como?</label><br>
+            <div class="btn-group" role="group" aria-label="Tipo de Registro">
+              <input type="radio" class="btn-check" name="tipoUsuario" id="cliente" value="cliente" autocomplete="off" checked>
+              <label class="btn btn-outline-primary" for="cliente">Dueño de Mascota</label>
+              
+              <input type="radio" class="btn-check" name="tipoUsuario" id="cuidador" value="cuidador" autocomplete="off">
+              <label class="btn btn-outline-primary ms-2" for="cuidador">Cuidador / Anfitrión</label>
+            </div>
+          </div>
+          
+          <form action="/api/register" method="POST" enctype="multipart/form-data" onsubmit="return registrar(event)">
+            <div class="mb-3">
+              <label for="nombre" class="form-label">Nombre completo</label>
+              <input type="text" class="form-control barra" id="nombre" name="nombre" placeholder="Tu nombre" required>
+            </div>
+            <div class="mb-3">
+              <label for="email" class="form-label">Correo electrónico</label>
+              <input type="email" class="form-control barra" id="email" name="email" placeholder="tu@email.com" required>
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label">Contraseña</label>
+              <input type="password" class="form-control barra" id="password" name="password" placeholder="******" required>
+            </div>
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="showPassword">
+                <label class="form-check-label" for="showPassword">
+                    Mostrar Contraseña
+                </label>
+            </div>
+            
+
+            <!-- Campos solo para cuidadores -->
+            <div id="campos-cuidador" class="d-none">
+              <hr>
+              <h5 class="fw-bold mb-3" style="color: #ce578f;">Datos del Cuidador</h5>
+              <div class="mb-3">
+                <label for="imagenCuidador" class="form-label">Foto del cuidador o del espacio</label>
+                <input type="file" class="form-control barra" id="imagenCuidador" name="foto" accept="image/*">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Servicios que ofreces</label><br>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="alojamiento" name="servicios" value="Alojamiento">
+                  <label class="form-check-label" for="alojamiento">Alojamiento</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="paseos" name="servicios" value="Paseos">
+                  <label class="form-check-label" for="paseos">Paseos</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="transporte" name="servicios" value="Transporte">
+                  <label class="form-check-label" for="transporte">Transporte</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="peluqueria" name="servicios" value="Peluquería">
+                  <label class="form-check-label" for="peluqueria">Peluquería</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="cuidados" name="servicios" value="Cuidados Especializados">
+                  <label class="form-check-label" for="cuidados">Cuidados Especializados</label>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="descripcion" class="form-label">Describe tus servicios</label>
+                <textarea id="descripcion" class="form-control barra" name="descripcion" rows="3" placeholder="Ej: Tengo experiencia con mascotas mayores..."></textarea>
+              </div>
+              <div class="row g-2">
+                <div class="col-md-6">
+                  <label for="localidad" class="form-label">Localidad</label>
+                  <input type="text" class="form-control barra" id="localidad" name="localidad" placeholder="Ej: Capital Federal">
+                </div>
+                <div class="col-md-6">
+                  <label for="partido" class="form-label">Partido</label>
+                  <input type="text" class="form-control barra" id="partido" name="partido" placeholder="Ej: Buenos Aires">
+                </div>
+              </div>
+              <div class="mt-3">
+                <label for="ubicacion-search" class="form-label">Buscar dirección (opcional)</label>
+                <input type="text" class="form-control barra" id="ubicacion-search" placeholder="Ej: Av. Colombres 1000">
+                <button class="btn btn-light mt-2 w-100" type="button" id="btn-search-coords">Buscar Dirección</button>
+              </div>
+              <div id="map-selection"></div>
+
+              <!-- Coordenadas Visibles -->
+              <div class="mb-2 coord-display">
+                Latitud: <span id="display-lat">--</span>
+              </div>
+              <div class="mb-2 coord-display">
+                Longitud: <span id="display-lng">--</span>
+              </div>
+
+              <!-- Campos Ocultos -->
+              <input type="hidden" id="lat" name="lat">
+              <input type="hidden" id="lng" name="lng">
+            </div>
+
+            <div class="d-grid mt-4">
+              <button type="submit" class="btn btn-primary">Crear Cuenta</button>
+            </div>
+          </form>
+          <p class="mt-3 text-center">¿Ya tienes cuenta? <a href="login.html" style="color: #c90a66;">Inicia sesión aquí</a></p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>  
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script> 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Seleccionamos el campo de la contraseña y el checkbox
+        const passwordInput = document.getElementById('password');
+        const showPasswordCheckbox = document.getElementById('showPassword');
+
+        // Añadimos un 'escuchador' que se activa cuando el estado del checkbox cambia
+        showPasswordCheckbox.addEventListener('change', function () {
+            // Si el checkbox está marcado...
+            if (this.checked) {
+                // Cambiamos el tipo del campo a 'text' para que sea visible
+                passwordInput.type = 'text';
+            } else {
+                // Si no está marcado, lo volvemos a cambiar a 'password' para ocultarlo
+                passwordInput.type = 'password';
+            }
+        });
+    });
+</script>
+
+  <script>
+    let map = null;
+    let marker = null;
+    let mapInitialized = false;
+
+    function initMap() {
+      if (mapInitialized) return;
+      mapInitialized = true;
+
+      map = L.map('map-selection').setView([-34.76, -58.39], 13); // Centro inicial en Argentina
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',  {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      const pawIcon = L.icon({
+        iconUrl: './assets/icons/paw.png',
+        iconSize: [38, 38],
+        iconAnchor: [19, 38],
+        popupAnchor: [0, -38]
+      });
+
+      marker = L.marker(map.getCenter(), { draggable: true, icon: pawIcon }).addTo(map);
+
+      updateCoords(marker.getLatLng());
+
+      marker.on('dragend', function(e) {
+        updateCoords(e.target.getLatLng());
+      });
+    }
+
+    function updateCoords(latlng) {
+      document.getElementById('lat').value = latlng.lat.toFixed(6);
+      document.getElementById('lng').value = latlng.lng.toFixed(6);
+      document.getElementById('display-lat').textContent = latlng.lat.toFixed(6);
+      document.getElementById('display-lng').textContent = latlng.lng.toFixed(6);
+      
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}&accept-language=es`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.display_name) {
+            const parts = data.display_name.split(",");
+            if (!document.getElementById("localidad").value) document.getElementById("localidad").value = parts[0].trim();
+            if (!document.getElementById("partido").value && parts.length > 1) document.getElementById("partido").value = parts.slice(1).join(",").trim();
+          }
+        })
+        .catch(() => {});
+    }
+
+    document.getElementById('btn-search-coords').addEventListener('click', () => {
+      const query = document.getElementById('ubicacion-search').value.trim();
+      if (!query) return;
+
+      fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=ar&accept-language=es`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.length > 0) {
+            const result = data[0];
+            const latlng = L.latLng(result.lat, result.lon);
+            map.flyTo(latlng, 17);
+            marker.setLatLng(latlng);
+            updateCoords(latlng);
+          } else {
+            alert("No se encontró la ubicación.");
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          alert("Error al buscar la dirección.");
+        });
+    });
+
+    const radios = document.querySelectorAll('input[name="tipoUsuario"]');
+    const camposCuidador = document.getElementById("campos-cuidador");
+
+    function actualizarCampos() {
+      if (document.getElementById("cuidador").checked) {
+        camposCuidador.classList.remove("d-none");
+        if (!mapInitialized) initMap();
+      } else {
+        camposCuidador.classList.add("d-none");
+      }
+    }
+
+    radios.forEach(radio => {
+      radio.addEventListener("change", actualizarCampos);
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      actualizarCampos(); // Ejecutar al cargar la página
+    });
+
+    async function registrar(e) {
+      e.preventDefault();
+      const form = document.querySelector("form");
+      const formData = new FormData(form);
+
+      const tipo = document.querySelector('input[name="tipoUsuario"]:checked').value;
+      formData.append('tipoUsuario', tipo);
+
+      const serviciosSeleccionados = Array.from(document.querySelectorAll('input[name="servicios"]:checked'))
+                                       .map(checkbox => checkbox.value);
+      if (serviciosSeleccionados.length > 0) {
+        formData.append('servicios', JSON.stringify(serviciosSeleccionados));
+      }
+
+      if (tipo === 'cuidador') {
+        const fileInput = document.getElementById("imagenCuidador");
+        const file = fileInput.files[0];
+        if (!file) {
+          alert("Por favor, sube una foto si te registras como cuidador.");
+          return false;
+        }
+      }
+
+      try {
+        const response = await fetch("/register", {
+          method: "POST",
+          body: formData
+        });
+        const result = await response.json();
+
+        if (response.ok && result.status === "success") {
+          alert("Registro completado correctamente");
+          window.location.href = "/login.html";
+        } else {
+          alert(result.message || "Hubo un error al registrarte");
+        }
+      } catch (error) {
+        console.error("Error durante el registro:", error);
+        alert("Hubo un error de conexión al registrarte. Inténtalo de nuevo.");
+      }
+
+      return false;
+    }
+  </script>
+  
+</body>
+{% endblock %}
+</html>

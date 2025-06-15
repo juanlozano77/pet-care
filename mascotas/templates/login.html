@@ -1,0 +1,71 @@
+{% extends 'layout.html' %}
+
+{% block title %}Iniciar Sesión{% endblock %}
+
+{% block content %}
+{# Este bloque de CSS aplica los estilos de foco y del botón #}
+ <link rel="stylesheet" href="{{ url_for('static', filename='./css/styles.css') }}">
+
+<div class="container" style="max-width: 480px;">
+    <div class="card card-formulario shadow-sm mb-4 p-4">
+        <h2 class="text-center fw-bold mb-4" style="color: var(--accent-color);">Iniciar Sesión</h2>
+        
+        {# Bloque para mostrar mensajes flash de Flask #}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} text-center" role="alert">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('login') }}">
+            <div class="mb-3">
+                <label for="email" class="form-label">Correo Electrónico</label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="tu@email.com" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="password" class="form-label">Contraseña</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="Contraseña" required>
+            </div>
+
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="showPassword">
+                <label class="form-check-label" for="showPassword">
+                    Mostrar Contraseña
+                </label>
+            </div>
+            
+            <div class="d-grid mt-4">
+                <button type="submit" class="btn btn-accent btn-lg">Entrar</button>
+            </div>
+            <p class="mt-4 text-center text-muted">¿No tienes una cuenta? <a href="{{ url_for('register') }}" style="color: var(--accent-color);">Regístrate</a></p>
+        </form>
+    </div>
+</div>
+
+{# Script de JavaScript para la funcionalidad de mostrar/ocultar contraseña #}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Seleccionamos el campo de la contraseña y el checkbox
+        const passwordInput = document.getElementById('password');
+        const showPasswordCheckbox = document.getElementById('showPassword');
+
+        // Añadimos un 'escuchador' que se activa cuando el estado del checkbox cambia
+        showPasswordCheckbox.addEventListener('change', function () {
+            // Si el checkbox está marcado...
+            if (this.checked) {
+                // Cambiamos el tipo del campo a 'text' para que sea visible
+                passwordInput.type = 'text';
+            } else {
+                // Si no está marcado, lo volvemos a cambiar a 'password' para ocultarlo
+                passwordInput.type = 'password';
+            }
+        });
+    });
+</script>
+
+{% endblock %}
