@@ -2,13 +2,15 @@ import pymysql
 import random
 from werkzeug.security import generate_password_hash
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # --- CONFIGURACIÓN DE LA CONEXIÓN A MYSQL ---
-DB_HOST = os.getenv("DB_HOST", "pets-do-user-22984484-0.m.db.ondigitalocean.com")
-DB_PORT = int(os.getenv("DB_PORT", "25060"))
-DB_USER = os.getenv("DB_USER", "doadmin")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "AVNS_xCPVX1qkvAfYAnNHWKk")
-DB_NAME = os.getenv("DB_NAME", "defaultdb")
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = int(os.getenv("DB_PORT"))
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_NAME = os.getenv("DB_NAME")
 
 def conectar():
     return pymysql.connect(

@@ -9,6 +9,8 @@ import pymysql
 import boto3
 from botocore.client import Config
 from urllib.parse import urlparse
+from dotenv import load_dotenv
+load_dotenv()
 
 # --- CONFIGURACIÓN DE LA APLICACIÓN ---
 app = Flask(__name__)
@@ -18,14 +20,15 @@ app.config['SECRET_KEY'] = 'compunube'
 def get_db():
     if 'db' not in g:
         g.db = pymysql.connect(
-            host=os.getenv("DB_HOST", "pets-do-user-22984484-0.m.db.ondigitalocean.com"),
-            user=os.getenv("DB_USER", "doadmin"),
-            password=os.getenv("DB_PASSWORD", "AVNS_xCPVX1qkvAfYAnNHWKk"),
-            database=os.getenv("DB_NAME", "defaultdb"),
-            port=int(os.getenv("DB_PORT", "25060")),
+            host=os.getenv("DB_HOST"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            database=os.getenv("DB_NAME" ),
+            port=int(os.getenv("DB_PORT")),
             ssl={"ssl_mode": "REQUIRED"},
             cursorclass=pymysql.cursors.DictCursor
         )
+        print(g)
     return g.db
 
 @app.teardown_appcontext
@@ -35,10 +38,10 @@ def close_db(exception):
         db.close()
 
 # --- CONFIGURACIÓN DE DIGITALOCEAN SPACES ---
-SPACE_NAME = os.getenv("SPACE_NAME", "pets")
-SPACE_REGION = os.getenv("SPACE_REGION", "nyc3")
-ACCESS_KEY = os.getenv("SPACE_ACCESS_KEY", "DO801V7QF7YABEPW6ZL3")
-SECRET_KEY = os.getenv("SPACE_SECRET_KEY", "1fNy3NYYdC87qdGpqLr2/uV/rne90xlwN/ULt5rq85Y")
+SPACE_NAME = os.getenv("SPACE_NAME")
+SPACE_REGION = os.getenv("SPACE_REGION")
+ACCESS_KEY = os.getenv("SPACE_ACCESS_KEY")
+SECRET_KEY = os.getenv("SPACE_SECRET_KEY")
 
 def get_space_client():
     return boto3.client(
