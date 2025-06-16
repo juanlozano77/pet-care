@@ -3,3 +3,4 @@ Flask-Login
 PyMySQL
 boto3
 gunicorn
+dotenv
