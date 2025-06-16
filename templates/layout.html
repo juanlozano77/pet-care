@@ -37,7 +37,9 @@
                 <ul class="navbar-nav gap-2">
                     {% if current_user.is_authenticated %}
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">🐾 Dashboard</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_main') }}">⚙️ Admin</a></li>
+                        {% if current_user.tipo_usuario=="admin" %}
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_main') }}">⚙️ Admin</a></li>
+                            {% endif %}
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">→ Salir</a></li>
                     {% else %}
                        

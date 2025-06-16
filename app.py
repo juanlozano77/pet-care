@@ -135,9 +135,7 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('dashboard'))
-
+    
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
@@ -149,6 +147,10 @@ def login():
         if user_data and check_password_hash(user_data['password'], password):
             user_obj = User(user_data)
             login_user(user_obj)
+            if current_user.tipo_usuario == 'admin': # Asumiendo que tu User object tiene 'tipo_usuario'
+                return redirect(url_for('admin_main'))
+            
+             
             next_page = request.args.get('next')
             if next_page and urlparse(next_page).netloc != '':
                 next_page = None
@@ -156,6 +158,8 @@ def login():
             if not next_page:
                 if current_user.tipo_usuario == 'admin': # Asumiendo que tu User object tiene 'tipo_usuario'
                     next_page = url_for('admin_main')
+                    return redirect(next_page)
+                    
                 else:
                     next_page = url_for('dashboard')
 
