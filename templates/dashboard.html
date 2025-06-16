@@ -1,325 +1,319 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Encuentra un Cuidador - AirPets Stay</title>
-    <!-- Dependencias -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"> 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
-
-    <!-- Estilos Personalizados -->
-    <style>
-        :root {
-            --bg-light-main: #f8f4f9;
-            --bg-light-secondary: #ffffff;
-            --text-dark: #292935;
-            --text-muted: #6c757d;
-            --accent-color: #c90a66;
-            --accent-color-light: #e6cadf;
-            --border-color: #e0e0e0;
-        }
-        body {
-            background-color: var(--bg-light-main);
-            color: var(--text-dark);
-            font-family: 'Quicksand', sans-serif;
-        }
-        main { flex-grow: 1; }
-
-        /* Navbar */
-        .navbar {
-            background-color: var(--bg-light-secondary);
-            border-bottom: 1px solid var(--border-color);
-            padding: 0.75rem 1.5rem;
-        }
-        .navbar-brand img { height: 40px; }
-        .navbar-brand h1 { color: var(--text-dark); font-weight: 700; font-size: 1.5rem; margin: 0; }
-        .nav-link { color: var(--text-muted); font-weight: 500; }
-        .nav-link.active, .nav-link:hover { color: var(--accent-color); }
-
-        /* Filtros */
-        .filter-group .form-check-label {
-            background-color: var(--bg-light-secondary);
-            color: var(--text-muted);
-            border: 1px solid var(--border-color);
-            padding: 0.5rem 1rem;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-        .filter-group .form-check-input { display: none; }
-        .filter-group .form-check-input:checked + .form-check-label {
-            background-color: var(--accent-color);
-            color: white;
-            border-color: var(--accent-color);
-        }
-
-        /* Barra de búsqueda redondeada */
-        .search-group { border-radius: 30px; border: 1px solid var(--border-color); background-color: var(--bg-light-secondary); overflow: hidden;}
-        .search-group:focus-within { border-color: var(--accent-color); box-shadow: 0 0 0 0.25rem rgba(201, 10, 102, .25); }
-        .search-group .input-group-text { background: transparent; border: none; color: var(--text-muted); }
-        .search-group .form-control { border: none; background: transparent; box-shadow: none; }
-        
-        /* Tarjetas */
-        .card-cuidador {
-            background-color: var(--bg-light-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 15px;
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .card-cuidador:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-        }
-        .card-cuidador .card-img-top { height: 200px; object-fit: cover; }
-        .card-cuidador .card-title { font-weight: 700; color: var(--text-dark); }
-        .card-cuidador .card-text { color: var(--text-muted); font-size: 0.9rem; }
-        .btn-accent {
-            background-color: var(--accent-color); border-color: var(--accent-color);
-            color: white; font-weight: 700;
-        }
-        .btn-accent:hover { opacity: 0.9; background-color: var(--accent-color); color: white; }
-        
-        /* Mapa */
-        #map { border-radius: 15px; height: 500px; border: 1px solid var(--border-color); }
-        
-        /* Modal */
-        .modal-content { background-color: var(--bg-light-main); }
-        .review-card { background-color: var(--bg-light-secondary); border-color: var(--border-color); }
-        
-        /* Footer */
-        .footer { background-color: var(--bg-light-secondary); border-top: 1px solid var(--border-color); color: var(--text-muted); }
-        .footer a { color: var(--text-muted); transition: color 0.3s ease; }
-        .footer a:hover { color: var(--accent-color); }
-    </style>
-</head>
-<body>
 {% extends 'layout.html' %}
 
+{% block title %}Encuentra un Cuidador - PetCare & Health{% endblock %}
+
 {% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+    :root {
+        --bg-light-main: #f8f4f9;
+        --bg-light-secondary: #ffffff;
+        --text-dark: #292935;
+        --text-muted: #6c757d;
+        --accent-color: #c90a66;
+        --accent-color-light: #e6cadf;
+        --border-color: #e0e0e0;
+    }
+    body {
+        background-color: var(--bg-light-main);
+        color: var(--text-dark);
+        font-family: 'Quicksand', sans-serif;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+    main { flex-grow: 1; }
 
-    <main class="container-fluid py-5 px-md-5">
-      <div class="row">
-        <div class="col-lg-8 col-xl-9">
-          <div class="mb-5 px-3">
-            <h2 class="fw-bold">Encuentra el cuidador perfecto para tu mascota</h2>
-            <p class="text-muted">Explora anfitriones cerca de ti. Usa los filtros para refinar tu búsqueda.</p>
-          </div>
+    
+    /* Filtros */
+    .filter-group .form-check-label {
+        background-color: var(--bg-light-secondary);
+        color: var(--text-muted);
+        border: 1px solid var(--border-color);
+        padding: 0.5rem 1rem;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    .filter-group .form-check-input { display: none; }
+    .filter-group .form-check-input:checked + .form-check-label {
+        background-color: var(--accent-color);
+        color: white;
+        border-color: var(--accent-color);
+    }
 
-          <form id="filter-form" class="d-flex flex-column flex-md-row gap-3 mb-4 px-3">
+    /* Barra de búsqueda redondeada */
+    .search-group { 
+        border-radius: 30px; 
+        border: 1px solid var(--border-color); 
+        background-color: var(--bg-light-secondary); /* Fondo general blanco */
+        overflow: hidden;
+    }
+    .search-group:focus-within { 
+        border-color: var(--accent-color); 
+        box-shadow: 0 0 0 0.25rem rgba(201, 10, 102, .25); 
+    }
+    .search-group .form-control { 
+        border: none; 
+        background-color: transparent !important; /* El input es transparente para mostrar el fondo del padre */
+        box-shadow: none; 
+    }
+    
+    /* --- REGLA AÑADIDA PARA LA SOLUCIÓN --- */
+    .search-group .input-group-text {
+        background-color: transparent !important;/* Hacemos que la lupa también sea transparente */
+        border: none;
+    }
+    /* --- FIN DE LA SOLUCIÓN --- */
+    
+    /* Tarjetas */
+    .card-title{
+        color: #bc0955 !important;
+    }
+    .card-cuidador {
+        background-color: var(--bg-light-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 15px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card-cuidador:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    }
+    .card-cuidador .card-img-top { height: 200px; object-fit: cover; }
+    .card-cuidador .card-title { font-weight: 700; color: var(--text-dark); }
+    .card-cuidador .card-text { color: var(--text-muted); font-size: 0.9rem; }
+    .btn-accent {
+        background-color: var(--accent-color); border-color: var(--accent-color);
+        color: white; font-weight: 700;
+    }
+    .btn-accent:hover { opacity: 0.9; background-color: var(--accent-color); color: white; }
+    
+    /* Mapa */
+    #map { border-radius: 15px; height: 500px; border: 1px solid var(--border-color); }
+    
+    /* Modal */
+    .modal-content { background-color: var(--bg-light-main); }
+    .review-card { background-color: var(--bg-light-secondary); border-color: var(--border-color); }
+</style>
+
+<div class="container-fluid py-5 px-md-5">
+    <div class="row">
+      <div class="col-lg-8 col-xl-9">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show text-center" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="mb-5 px-3">
+          <h2 class="fw-bold">Encuentra el cuidador perfecto para tu mascota</h2>
+          <p class="text-muted">Explora anfitriones cerca de ti. Usa los filtros para refinar tu búsqueda.</p>
+        </div>
+
+        <form id="filter-form" class="d-flex flex-column flex-md-row gap-3 mb-4 px-3">
             <div class="d-flex align-items-center flex-wrap gap-2 filter-group flex-grow-1">
-              {% for categoria in ['Alojamiento', 'Paseos', 'Transporte', 'Peluquería', 'Cuidado Especializado'] %}
-              <div class="form-check">
+            {% for categoria in ['Alojamiento', 'Paseos', 'Transporte', 'Peluquería', 'Cuidado Especializado'] %}
+            <div class="form-check">
                 <input class="form-check-input" type="checkbox" value="{{ categoria }}" name="servicios" id="check_{{ categoria }}">
                 <label class="form-check-label" for="check_{{ categoria }}">{{ categoria }}</label>
-              </div>
-              {% endfor %}
+            </div>
+            {% endfor %}
             </div>
             <div class="input-group search-group" style="max-width: 300px;">
                 <span class="input-group-text"><i class="bi bi-search"></i></span>
                 <input class="form-control" name="search" placeholder="Buscar por nombre o ubicación...">
             </div>
-          </form>
+        </form>
 
-          <div id="cuidadores-container" class="row g-4">
+        <div id="cuidadores-container" class="row g-4">
             {% for cuidador in cuidadores %}
             <div class="col-sm-6 col-lg-6 col-xl-4 cuidador-card" 
                  data-id="{{ cuidador.id }}"
                  data-servicios="{{ cuidador.servicios|join(',') }}"
                  data-nombre="{{ cuidador.nombre }}"
-                 data-ubicacion="{{ cuidador.ubicacion|lower }}"
+                 data-ubicacion="{{ cuidador.ubicacion|lower if cuidador.ubicacion else '' }}"
                  data-lat="{{ cuidador.lat }}"
                  data-lng="{{ cuidador.lng }}">
               <div class="card card-cuidador h-100">
-                <img src="{{ cuidador.image }}" class="card-img-top" alt="Foto de {{ cuidador.nombre }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='assets/img/placeholder.jpg') }}';">
+                <img src="{{ cuidador.foto or url_for('static', filename='assets/img/placeholder.jpg') }}" class="card-img-top" alt="Foto de {{ cuidador.nombre }}">
                 <div class="card-body d-flex flex-column">
                   <h5 class="card-title">{{ cuidador.nombre }}</h5>
                   <p class="card-text small text-muted"><i class="bi bi-geo-alt-fill me-1" style="color: var(--accent-color);"></i> {{ cuidador.ubicacion }}</p>
                   <p class="card-text flex-grow-1">{{ cuidador.descripcion }}</p>
                   <div class="d-flex justify-content-between align-items-center mt-3">
                     <div>
-                        {% for n in range(1, 6) %}
-                          <i class="bi bi-star-fill" style="color: {{ '#f5c13b' if n <= cuidador.rating else '#d1d1d1' }};"></i>
-                        {% endfor %}
-                        <span class="text-muted ms-2 small">{{ cuidador.rating }}</span>
+                      {% set rating = cuidador.rating | float %}
+                      {% for n in range(1, 6) %}<i class="bi bi-star-fill" style="color: {{ '#f5c13b' if n <= rating else '#d1d1d1' }};"></i>{% endfor %}
+                      <span class="text-muted ms-2 small">{{ rating }}</span>
                     </div>
                     <button class="btn btn-sm btn-accent" data-bs-toggle="modal" data-bs-target="#reviewsModal">Ver Reseñas</button>
                   </div>
                 </div>
               </div>
             </div>
+            {% else %}
+            <div class="col-12 text-center py-5">
+              <i class="bi bi-shield-exclamation fs-1 text-muted"></i>
+              <h4 class="mt-3">No hay cuidadores disponibles</h4>
+              <p class="text-muted">Actualmente no hay cuidadores registrados. ¡Vuelve a intentarlo más tarde!</p>
+            </div>
             {% endfor %}
             <div id="no-results-message" class="col-12 text-center py-5 d-none">
-                <i class="bi bi-emoji-frown fs-1 text-muted"></i>
-                <h4 class="mt-3">No se encontraron cuidadores</h4>
-                <p class="text-muted">Intenta cambiar los filtros o tu término de búsqueda.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-lg-4 col-xl-3 mt-5 mt-lg-0">
-            <div class="sticky-top" style="top: 20px;">
-                <h4 class="mb-3 fw-bold px-3 px-lg-0">Ubicación en el Mapa</h4>
-                <div id="map"></div>
+              <i class="bi bi-emoji-frown fs-1 text-muted"></i>
+              <h4 class="mt-3">No se encontraron cuidadores</h4>
+              <p class="text-muted">Intenta cambiar los filtros o tu término de búsqueda.</p>
             </div>
         </div>
       </div>
-    </main>
 
-    <footer class="footer mt-auto py-4">
-        <div class="container text-center">
-            <p class="mb-1">&copy; 2025 AirPets Stay - Todos los derechos reservados.</p>
-            <div class="d-flex justify-content-center gap-3">
-                <a href="#"><i class="bi bi-facebook fs-5"></i></a>
-                <a href="#"><i class="bi bi-instagram fs-5"></i></a>
-                <a href="#"><i class="bi bi-whatsapp fs-5"></i></a>
-            </div>
-        </div>
-    </footer>
-
-    <div class="modal fade" id="reviewsModal" tabindex="-1" aria-labelledby="reviewsModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="reviewsModalLabel">Reseñas para...</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="col-lg-4 col-xl-3 mt-5 mt-lg-0">
+          <div class="sticky-top" style="top: 20px;">
+              <h4 class="mb-3 fw-bold px-3 px-lg-0">Ubicación en el Mapa</h4>
+              <div id="map"></div>
           </div>
-          <div class="modal-body">
-            <div id="reviews-container">
-                <div class="d-flex justify-content-center">
-                    <div class="spinner-border" role="status" style="color: var(--accent-color);">
-                        <span class="visually-hidden">Cargando...</span>
-                    </div>
-                </div>
-            </div>
+      </div>
+    </div>
+</div>
+
+<div class="modal fade" id="reviewsModal" tabindex="-1" aria-labelledby="reviewsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="reviewsModalLabel">Reseñas para...</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="reviews-container">
           </div>
         </div>
       </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script> 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // --- INICIALIZACIÓN ---
-            const map = L.map('map').setView([-34.65, -58.45], 10);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-              attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            }).addTo(map);
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script> 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const map = L.map('map').setView([-34.77, -58.40], 11); // Centrado en Temperley/Lomas
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
 
-            // Definir el ícono de patita personalizado
-            const pawIcon = L.icon({
-                iconUrl: "{{ url_for('static', filename='assets/icons/paw.png') }}",
-                iconSize: [32, 37], // Tamaño del ícono
-                iconAnchor: [16, 37], // Punto del ícono que corresponde a la ubicación
-                popupAnchor: [0, -37] // Punto desde donde se abre el popup
-            });
+        const pawIcon = L.icon({
+            iconUrl: "{{ url_for('static', filename='assets/icons/paw.png') }}",
+            iconSize: [32, 37],
+            iconAnchor: [16, 37],
+            popupAnchor: [0, -37]
+        });
 
-            const markers = {};
-            document.querySelectorAll('.cuidador-card').forEach(card => {
+        const markers = {};
+        document.querySelectorAll('.cuidador-card').forEach(card => {
+            const id = card.dataset.id;
+            const lat = parseFloat(card.dataset.lat);
+            const lng = parseFloat(card.dataset.lng);
+            const nombre = card.dataset.nombre;
+            
+            if (!isNaN(lat) && !isNaN(lng)) {
+                const marker = L.marker([lat, lng], { icon: pawIcon })
+                    .bindPopup(`<b style="color: var(--accent-color);">${nombre}</b>`);
+                markers[id] = marker;
+            }
+        });
+
+        const filterForm = document.getElementById('filter-form');
+        const noResultsMessage = document.getElementById('no-results-message');
+        const allCards = document.querySelectorAll('.cuidador-card');
+
+        function filtrarCuidadores() {
+            const searchInput = filterForm.querySelector('input[name="search"]').value.toLowerCase();
+            const serviciosSeleccionados = Array.from(filterForm.querySelectorAll('input[name="servicios"]:checked')).map(cb => cb.value);
+            let resultadosVisibles = 0;
+
+            allCards.forEach(card => {
+                const nombre = card.dataset.nombre.toLowerCase();
+                const ubicacion = card.dataset.ubicacion;
+                const servicios = card.dataset.servicios.split(',');
                 const id = card.dataset.id;
+                
+                const coincideTexto = !searchInput || nombre.includes(searchInput) || ubicacion.includes(searchInput);
+                const coincideServicios = serviciosSeleccionados.length === 0 || serviciosSeleccionados.every(s => servicios.includes(s));
+
+                if (coincideTexto && coincideServicios) {
+                    card.style.display = 'block';
+                    if (markers[id] && !map.hasLayer(markers[id])) markers[id].addTo(map);
+                    resultadosVisibles++;
+                } else {
+                    card.style.display = 'none';
+                    if (markers[id] && map.hasLayer(markers[id])) map.removeLayer(markers[id]);
+                }
+            });
+            noResultsMessage.classList.toggle('d-none', resultadosVisibles > 0);
+        }
+
+        filterForm.addEventListener('input', filtrarCuidadores);
+
+        // --- CÓDIGO RESTAURADO PARA CENTRAR EL MAPA ---
+        allCards.forEach(card => {
+            card.addEventListener('mouseover', () => {
                 const lat = parseFloat(card.dataset.lat);
                 const lng = parseFloat(card.dataset.lng);
-                const nombre = card.dataset.nombre;
-                
                 if (!isNaN(lat) && !isNaN(lng)) {
-                    const marker = L.marker([lat, lng], { icon: pawIcon })
-                        .bindPopup(`<b style="color: var(--accent-color);">${nombre}</b>`);
-                    markers[id] = marker;
+                    map.flyTo([lat, lng], 14, { duration: 0.5 });
+                    if (markers[card.dataset.id]) {
+                        // Abrimos el popup del marcador correspondiente
+                        markers[card.dataset.id].openPopup();
+                    }
                 }
             });
+        });
+        // --- FIN DEL CÓDIGO RESTAURADO ---
 
-            const filterForm = document.getElementById('filter-form');
-            const noResultsMessage = document.getElementById('no-results-message');
-            const allCards = document.querySelectorAll('.cuidador-card');
+        const reviewsModal = document.getElementById('reviewsModal');
+        reviewsModal.addEventListener('show.bs.modal', async function (event) {
+            const button = event.relatedTarget;
+            const card = button.closest('.cuidador-card');
+            const cuidadorId = card.dataset.id;
+            const cuidadorNombre = card.dataset.nombre;
 
-            // --- FUNCIONES ---
-            function filtrarCuidadores() {
-                const searchInput = filterForm.querySelector('input[name="search"]').value.toLowerCase();
-                const serviciosSeleccionados = Array.from(filterForm.querySelectorAll('input[name="servicios"]:checked')).map(cb => cb.value);
-                let resultadosVisibles = 0;
+            const modalTitle = reviewsModal.querySelector('.modal-title');
+            const reviewsContainer = reviewsModal.querySelector('#reviews-container');
 
-                allCards.forEach(card => {
-                    const nombre = card.dataset.nombre.toLowerCase();
-                    const ubicacion = card.dataset.ubicacion;
-                    const servicios = card.dataset.servicios.split(',');
-                    const id = card.dataset.id;
-                    
-                    const coincideTexto = !searchInput || nombre.includes(searchInput) || ubicacion.includes(searchInput);
-                    const coincideServicios = serviciosSeleccionados.length === 0 || serviciosSeleccionados.every(s => servicios.includes(s));
+            modalTitle.textContent = `Reseñas para ${cuidadorNombre}`;
+            reviewsContainer.innerHTML = `<div class="d-flex justify-content-center"><div class="spinner-border" style="color: var(--accent-color);" role="status"><span class="visually-hidden">Cargando...</span></div></div>`;
 
-                    if (coincideTexto && coincideServicios) {
-                        card.style.display = 'block';
-                        if (markers[id] && !map.hasLayer(markers[id])) markers[id].addTo(map);
-                        resultadosVisibles++;
-                    } else {
-                        card.style.display = 'none';
-                        if (markers[id] && map.hasLayer(markers[id])) map.removeLayer(markers[id]);
-                    }
-                });
-                noResultsMessage.classList.toggle('d-none', resultadosVisibles > 0);
-            }
+            try {
+                const response = await fetch(`/api/reviews/${cuidadorId}`);
+                const result = await response.json();
 
-            // --- EVENT LISTENERS ---
-            filterForm.addEventListener('input', filtrarCuidadores);
-
-            // Centrar mapa al pasar el mouse por la tarjeta
-            allCards.forEach(card => {
-                card.addEventListener('mouseover', () => {
-                    const lat = parseFloat(card.dataset.lat);
-                    const lng = parseFloat(card.dataset.lng);
-                    if (!isNaN(lat) && !isNaN(lng)) {
-                        map.flyTo([lat, lng], 14, { duration: 0.5 });
-                    }
-                });
-            });
-
-            // Lógica para el modal de reseñas
-            const reviewsModal = document.getElementById('reviewsModal');
-            reviewsModal.addEventListener('show.bs.modal', async function (event) {
-                const button = event.relatedTarget;
-                const card = button.closest('.cuidador-card');
-                const cuidadorId = card.dataset.id;
-                const cuidadorNombre = card.dataset.nombre;
-
-                const modalTitle = reviewsModal.querySelector('.modal-title');
-                const reviewsContainer = reviewsModal.querySelector('#reviews-container');
-
-                modalTitle.textContent = `Reseñas para ${cuidadorNombre}`;
-                reviewsContainer.innerHTML = `<div class="d-flex justify-content-center"><div class="spinner-border" style="color: var(--accent-color);" role="status"><span class="visually-hidden">Cargando...</span></div></div>`;
-
-                try {
-                    const response = await fetch(`/api/reviews/${cuidadorId}`);
-                    const result = await response.json();
-
-                    if (result.status === 'success' && result.data.length > 0) {
-                        reviewsContainer.innerHTML = result.data.map(review => `
-                            <div class="card review-card mb-3 border">
-                                <div class="card-body">
-                                    <h6 class="card-title fw-bold">${review.cliente_nombre}</h6>
-                                    <p class="card-text">${review.texto}</p>
-                                    <div class="text-warning">
-                                        ${[...Array(5)].map((_, i) => `<i class="bi ${i < review.calificacion ? 'bi-star-fill' : 'bi-star'}"></i>`).join('')}
-                                    </div>
+                if (result.status === 'success' && result.data.length > 0) {
+                    reviewsContainer.innerHTML = result.data.map(review => `
+                        <div class="card review-card mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title fw-bold">${review.cliente_nombre}</h6>
+                                <p class="card-text">${review.texto}</p>
+                                <div class="text-warning">
+                                    ${[...Array(5)].map((_, i) => `<i class="bi ${i < review.calificacion ? 'bi-star-fill' : 'bi-star'}"></i>`).join('')}
                                 </div>
                             </div>
-                        `).join('');
-                    } else {
-                        reviewsContainer.innerHTML = '<p class="text-muted">Este cuidador aún no tiene reseñas.</p>';
-                    }
-                } catch (error) {
-                    reviewsContainer.innerHTML = '<p class="text-danger">No se pudieron cargar las reseñas.</p>';
-                    console.error('Error fetching reviews:', error);
+                        </div>
+                    `).join('');
+                } else {
+                    reviewsContainer.innerHTML = '<p class="text-muted text-center">Este cuidador aún no tiene reseñas.</p>';
                 }
-            });
-            
-            filtrarCuidadores(); // Primera ejecución para mostrar todo
+            } catch (error) {
+                reviewsContainer.innerHTML = '<p class="text-danger text-center">No se pudieron cargar las reseñas en este momento.</p>';
+                console.error('Error fetching reviews:', error);
+            }
         });
-    </script>
-</body>
-</html>
+        
+        filtrarCuidadores(); // Primera ejecución para mostrar todo
+    });
+</script>
 {% endblock %}

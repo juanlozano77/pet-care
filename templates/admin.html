@@ -4,12 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administración - AirPets Stay</title>
-    <!-- Bootstrap CSS y Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
 
-    <!-- Estilos personalizados -->
     <style>
         :root {
             --bg-light-main: #f8f4f9;
@@ -65,35 +63,31 @@
     </style>
 </head>
 <body>
+<div class="container-fluid my-4">
 
-{% macro render_pagination(pagination, endpoint='admin_main', page_type='cu') %}
-  {% if pagination and pagination.items and pagination.pages > 1 %}
-  <nav aria-label="Navegación de páginas" class="mt-4">
-      <ul class="pagination justify-content-center">
-          <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
-              <a class="page-link" href="{{ url_for(endpoint, page=page_type ~ '-' ~ pagination.prev_num) }}">&laquo;</a>
-          </li>
-          {% for page_num in pagination.iter_pages() %}
-              {% if page_num %}
-                  <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
-                      <a class="page-link" href="{{ url_for(endpoint, page=page_type ~ '-' ~ page_num) }}">{{ page_num }}</a>
-                  </li>
-              {% else %}
-                  <li class="page-item disabled"><span class="page-link">…</span></li>
-              {% endif %}
-          {% endfor %}
-          <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
-              <a class="page-link" href="{{ url_for(endpoint, page=page_type ~ '-' ~ pagination.next_num) }}">&raquo;</a>
-          </li>
-      </ul>
-  </nav>
-  {% elif pagination and pagination.pages == 1 %}
-    {# No mostramos paginación si solo hay una página #}
-  {% else %}
-    {# Si pagination es None o no tiene items #}
-  {% endif %}
-{% endmacro %}
-
+    {% macro render_pagination(pagination, endpoint='admin_main', page_type='cu') %}
+      {% if pagination and pagination.items and pagination.pages > 1 %}
+      <nav aria-label="Navegación de páginas" class="mt-4">
+          <ul class="pagination justify-content-center">
+              <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                  <a class="page-link" href="{{ url_for(endpoint, page=page_type ~ '-' ~ pagination.prev_num) }}">&laquo;</a>
+              </li>
+              {% for page_num in pagination.iter_pages() %}
+                  {% if page_num %}
+                      <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                          <a class="page-link" href="{{ url_for(endpoint, page=page_type ~ '-' ~ page_num) }}">{{ page_num }}</a>
+                      </li>
+                  {% else %}
+                      <li class="page-item disabled"><span class="page-link">…</span></li>
+                  {% endif %}
+              {% endfor %}
+              <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                  <a class="page-link" href="{{ url_for(endpoint, page=page_type ~ '-' ~ pagination.next_num) }}">&raquo;</a>
+              </li>
+          </ul>
+      </nav>
+      {% endif %}
+    {% endmacro %}
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="fw-bold">Panel de Administración</h1>
@@ -101,15 +95,12 @@
             <a href="/" class="btn btn-outline-dark"><i class="bi bi-eye-fill me-1"></i> Ver Sitio Público</a>
             <a href="{{ url_for('logout') }}" class="btn btn-outline-danger"><i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión</a>
         </div>
-            <!-- Navegación por pestañas -->
-        
     </div>
 
-    {# Bloque para mostrar mensajes flash de Flask #}
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
-            <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
                 {{ message }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
@@ -117,37 +108,37 @@
         {% endif %}
     {% endwith %}
 
-    <ul class="nav nav-tabs" id="adminTab" role="tablist">
-            <li class="nav-item" role="presentation">
+    <ul class="nav nav-tabs mb-4" id="adminTab" role="tablist">
+        <li class="nav-item" role="presentation">
             <a class="nav-link {% if type == 'cuidadores' %}active{% endif %}" href="{{ url_for('admin_main', page='cu-1') }}">🐾 Cuidadores</a>
-            </li>
-            <li class="nav-item" role="presentation">
+        </li>
+        <li class="nav-item" role="presentation">
             <a class="nav-link {% if type == 'clientes' %}active{% endif %}" href="{{ url_for('admin_main', page='cl-1') }}">👤 Clientes</a>
-            </li>
-            <li class="nav-item" role="presentation">
+        </li>
+        <li class="nav-item" role="presentation">
             <a class="nav-link {% if type == 'reseñas' %}active{% endif %}" href="{{ url_for('admin_main', page='re-1') }}">⭐ Reseñas</a>
-            </li>
-        </ul>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link {% if type == 'comentarios' %}active{% endif %}" href="{{ url_for('admin_main', page='co-1') }}">💬 Comentarios</a>
+        </li>
+    </ul>
 
-        
-        <!-- PESTAÑA CUIDADORES -->
-         
-            
-            {% if cuidadores and type == 'cuidadores' %}
+    <div class="tab-content" id="adminTabContent">
+        {% if cuidadores and type == 'cuidadores' %}
+        <div class="tab-pane fade show active" id="cuidadores-tab-pane" role="tabpanel">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h3>Gestión de Cuidadores</h3>
                 <button class="btn btn-accent" data-bs-toggle="modal" data-bs-target="#cuidadorModal" data-action="add">
                     <i class="bi bi-plus-circle-fill me-1"></i> Añadir Cuidador
                 </button>
             </div>
-            
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead><tr><th>Foto</th><th>Nombre</th><th>Ubicación</th><th>Coords. (Lat, Lng)</th><th class="text-end">Acciones</th></tr></thead>
                     <tbody>
                         {% for cuidador in cuidadores.items %}
                         <tr>
-                            <td><img src="{{ url_for('get_foto', user_id=cuidador.id) }}" class="cuidador-photo"></td>
+                            <td><img src="{{ cuidador.foto or url_for('static', filename='assets/img/placeholder.jpg') }}" class="cuidador-photo"></td>
                             <td>{{ cuidador.nombre }}</td>
                             <td>{{ cuidador.ubicacion or 'N/A' }}</td>
                             <td>
@@ -178,20 +169,19 @@
                     </tbody>
                 </table>
             </div>
-             {{ render_pagination(cuidadores, 'admin_main', 'cu') }}
-           {% endif %}
-       
+            {{ render_pagination(cuidadores, 'admin_main', 'cu') }}
+        </div>
+        {% endif %}
 
-        <!-- PESTAÑA CLIENTES -->
-         {% if clientes and type == 'clientes' %}
-             <div class="table-responsive">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+        {% if clientes and type == 'clientes' %}
+        <div class="tab-pane fade show active" id="clientes-tab-pane" role="tabpanel">
+             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h3>Gestión de Clientes</h3>
                 <button class="btn btn-accent" data-bs-toggle="modal" data-bs-target="#clienteModal" data-action="add">
                     <i class="bi bi-plus-circle-fill me-1"></i> Añadir Cliente
                 </button>
-                </div>
-            
+            </div>
+            <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th class="text-end">Acciones</th></tr></thead>
                     <tbody>
@@ -216,22 +206,20 @@
                         <tr><td colspan="4" class="text-center text-muted">No hay clientes para mostrar.</td></tr>
                         {% endfor %}
                     </tbody>
-                    
-
-
                 </table>
             </div>
-           {{ render_pagination(cuidadores, 'admin_main', 'cl') }}
-            {% endif %}
+           {{ render_pagination(clientes, 'admin_main', 'cl') }}
+        </div>
+        {% endif %}
        
-        
-        <!-- PESTAÑA RESEÑAS -->
-             <div class="d-flex justify-content-between align-items-center mb-3">
+        {% if reseñas and type == 'reseñas' %}
+        <div class="tab-pane fade show active" id="reseñas-tab-pane" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
                 <h3>Gestión de Reseñas</h3>
                 <button class="btn btn-accent" data-bs-toggle="modal" data-bs-target="#reseñaModal" data-action="add">
                     <i class="bi bi-plus-circle-fill me-1"></i> Añadir Reseña
                 </button>
-             </div>
+            </div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead><tr><th>ID</th><th>Reseña</th><th>Calificación</th><th>Cuidador</th><th>Cliente</th><th class="text-end">Acciones</th></tr></thead>
@@ -262,16 +250,57 @@
                     </tbody>
                 </table>
             </div>
-             {{ render_pagination(reseñas, 'admin_main', 're') }}
-    
+            {{ render_pagination(reseñas, 'admin_main', 're') }}
+        </div>
+        {% endif %}
+
+        {% if comentarios and type == 'comentarios' %}
+        <div class="tab-pane fade show active" id="comentarios-tab-pane" role="tabpanel">
+            <h3>Gestión de Comentarios</h3>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Asunto</th>
+                            <th style="min-width: 300px;">Mensaje</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for comentario in comentarios.items %}
+                        <tr>
+                            <td>{{ comentario.id }}</td>
+                            <td>{{ comentario.nombre }}</td>
+                            <td><a href="mailto:{{ comentario.email }}">{{ comentario.email }}</a></td>
+                            <td>{{ comentario.asunto }}</td>
+                            <td>{{ comentario.mensaje }}</td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                    data-id="{{ comentario.id }}" data-nombre="Comentario #{{ comentario.id }}" data-type="comentario">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="6" class="text-center text-muted">No hay comentarios para mostrar.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {{ render_pagination(comentarios, 'admin_main', 'co') }}
+        </div>
+        {% endif %}
     </div>
 </div>
 
-<!-- MODALES -->
 <div class="modal fade" id="cuidadorModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <form id="cuidadorForm" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="source_page" value="{{ current_page }}">
                 <div class="modal-header"><h5 class="modal-title" id="cuidadorModalLabel"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
                     <input type="hidden" name="id" id="cuidador-id">
@@ -311,6 +340,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <form id="clienteForm" method="POST">
+                <input type="hidden" name="source_page" value="{{ current_page }}">
                 <div class="modal-header"><h5 class="modal-title" id="clienteModalLabel"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
                     <input type="hidden" name="id" id="cliente-id">
@@ -328,6 +358,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <form id="reseñaForm" method="POST">
+                <input type="hidden" name="source_page" value="{{ current_page }}">
                 <div class="modal-header"><h5 class="modal-title" id="reseñaModalLabel"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
                     <input type="hidden" name="id" id="reseña-id">
@@ -374,9 +405,13 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header"><h5 class="modal-title">Confirmar Eliminación</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-      <div class="modal-body"><p>¿Estás seguro de que quieres eliminar a <strong id="delete-item-name"></strong>? Esta acción no se puede deshacer.</p></div>
+      <div class="modal-body"><p>¿Estás seguro de que quieres eliminar <strong id="delete-item-name"></strong>? Esta acción no se puede deshacer.</p></div>
       <div class="modal-footer">
-        <form id="deleteForm" method="POST"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-danger">Sí, eliminar</button></form>
+        <form id="deleteForm" method="POST">
+            <input type="hidden" name="source_page" value="{{ current_page }}">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+        </form>
       </div>
     </div>
   </div>
@@ -427,11 +462,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 form.querySelector('#cliente-id').value = button.getAttribute('data-id');
                 form.querySelector('#cliente-nombre').value = button.getAttribute('data-nombre');
                 form.querySelector('#cliente-email').value = button.getAttribute('data-email');
+                form.querySelector('#cliente-password').placeholder = "Dejar en blanco para no cambiar";
                 form.querySelector('#cliente-password').required = false;
             } else {
                 modalTitle.textContent = '➕ Añadir Nuevo Cliente';
                 form.action = "/admin/cliente/add";
                 form.reset();
+                form.querySelector('#cliente-password').placeholder = "";
                 form.querySelector('#cliente-password').required = true;
             }
         });
@@ -465,7 +502,9 @@ document.addEventListener('DOMContentLoaded', function () {
         deleteModal.addEventListener('show.bs.modal', function(event) {
             const button = event.relatedTarget;
             const form = document.getElementById('deleteForm');
-            form.action = `/admin/${button.getAttribute('data-type')}/delete/${button.getAttribute('data-id')}`;
+            const itemType = button.getAttribute('data-type');
+            const itemId = button.getAttribute('data-id');
+            form.action = `/admin/${itemType}/delete/${itemId}`;
             document.getElementById('delete-item-name').textContent = button.getAttribute('data-nombre');
         });
     }

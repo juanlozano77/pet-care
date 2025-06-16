@@ -1,0 +1,561 @@
+import pymysql
+import random
+from werkzeug.security import generate_password_hash
+import os
+
+# --- CONFIGURACIÓN DE LA CONEXIÓN A MYSQL ---
+DB_HOST = os.getenv("DB_HOST", "pets-do-user-22984484-0.m.db.ondigitalocean.com")
+DB_PORT = int(os.getenv("DB_PORT", "25060"))
+DB_USER = os.getenv("DB_USER", "doadmin")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "AVNS_xCPVX1qkvAfYAnNHWKk")
+DB_NAME = os.getenv("DB_NAME", "defaultdb")
+
+def conectar():
+    return pymysql.connect(
+        host=DB_HOST,
+        port=DB_PORT,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        database=DB_NAME,
+        ssl={"ssl_mode": "REQUIRED"},
+        cursorclass=pymysql.cursors.DictCursor
+    )
+
+# --- CREAR TABLAS EN LA BASE DE DATOS ---
+def crear_tablas(cursor):
+    queries = [
+        """DROP TABLE IF EXISTS servicios_cuidadores""",
+        """DROP TABLE IF EXISTS reseñas""",
+        """DROP TABLE IF EXISTS cuidadores""",
+        """DROP TABLE IF EXISTS usuarios""",
+        """DROP TABLE IF EXISTS mensajes_contacto""",
+
+        """CREATE TABLE IF NOT EXISTS usuarios (
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            nombre VARCHAR(255) NOT NULL,
+            email VARCHAR(255) UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            tipo_usuario VARCHAR(20) CHECK(tipo_usuario IN ('cliente', 'cuidador', 'admin')) DEFAULT 'cliente'
+        )""",
+
+        """CREATE TABLE IF NOT EXISTS cuidadores (
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            usuario_id INTEGER UNIQUE,
+            descripcion TEXT,
+            ubicacion VARCHAR(255),
+            lat REAL,
+            lng REAL,
+            foto TEXT,
+            rating REAL DEFAULT 0,
+            FOREIGN KEY(usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+        )""",
+
+        """CREATE TABLE IF NOT EXISTS servicios_cuidadores (
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            cuidador_id INTEGER,
+            servicio VARCHAR(100),
+            FOREIGN KEY(cuidador_id) REFERENCES usuarios(id) ON DELETE CASCADE
+        )""",
+
+        """CREATE TABLE IF NOT EXISTS reseñas (
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            cuidador_id INTEGER,
+            cliente_id INTEGER,
+            texto TEXT,
+            calificacion INTEGER CHECK(calificacion >= 1 AND calificacion <= 5),
+            FOREIGN KEY(cuidador_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+            FOREIGN KEY(cliente_id) REFERENCES usuarios(id) ON DELETE CASCADE
+        )""",
+
+        """CREATE TABLE IF NOT EXISTS mensajes_contacto (
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            nombre TEXT NOT NULL,
+            email TEXT NOT NULL,
+            asunto TEXT NOT NULL,
+            mensaje TEXT NOT NULL,
+            fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            leido BOOLEAN DEFAULT 0
+        )"""
+    ]
+
+    for query in queries:
+        print(f"Ejecutando: {query[:60]}...")
+        cursor.execute(query)
+    print("✅ Tablas creadas correctamente.")
+
+# --- INSERTAR DATOS INICIALES ---
+def insertar_datos_iniciales(cursor):
+    # Clientes de ejemplo
+    clientes_para_insertar = [
+        ("Juan Pérez", "juan@example.com", generate_password_hash("pass123", method='pbkdf2:sha256')),
+        ("Ana Gómez", "ana@example.com", generate_password_hash("pass456", method='pbkdf2:sha256')),
+        ("Carlos Méndez", "carlos@example.com", generate_password_hash("pass789", method='pbkdf2:sha256')),
+        ("Laura Fernández", "laura@example.com", generate_password_hash("pass101", method='pbkdf2:sha256')),
+        ("Diego Torres", "diego@example.com", generate_password_hash("pass202", method='pbkdf2:sha256')),
+        ("Federico Ruiz", "fede@example.com", generate_password_hash("pass606", method='pbkdf2:sha256')),
+        ("Valeria Mendoza", "valeria@example.com", generate_password_hash("pass707", method='pbkdf2:sha256')),
+        ("Gonzalo Díaz", "gonzalo@example.com", generate_password_hash("pass404", method='pbkdf2:sha256')),
+        ("Silvia Luna", "silvia@example.com", generate_password_hash("pass505", method='pbkdf2:sha256'))
+    ]
+    cliente_ids = []
+
+    for nombre, email, password in clientes_para_insertar:
+        cursor.execute("""
+            INSERT INTO usuarios (nombre, email, password, tipo_usuario)
+            VALUES (%s, %s, %s, 'cliente')
+        """, (nombre, email, password))
+        cliente_id = cursor.lastrowid
+        cliente_ids.append(cliente_id)
+
+    print("👥 Clientes insertados.")
+        
+
+        
+    # Cuidadores de ejemplo
+    cuidadores_datos = [
+            {
+            "nombre": "María López",
+            "email": "maria@pets.com",
+            "password": generate_password_hash("pass789", method='pbkdf2:sha256'),
+            "descripcion": "Ofrezco alojamiento seguro en mi casa con patio.",
+            "ubicacion": "Lanús, Buenos Aires",
+            "lat": -34.7062,
+            "lng": -58.3900,
+            "rating": 4.8,
+            "servicios": ["Alojamiento", "Paseos"],
+            }   ,
+            {
+            "nombre": "Carlos Rossi",
+            "email": "carlos@pets.com",
+            "password": generate_password_hash("pass101", method='pbkdf2:sha256'),
+            "descripcion": "Cuido mascotas con necesidades especiales o de alto riesgo.",
+            "ubicacion": "Avellaneda, Buenos Aires",
+            "lat": -34.6680,
+            "lng": -58.3740,
+            "rating": 4.5,
+            "servicios": ["Cuidado Especializado", "Transporte"],
+            },
+            {
+            "nombre": "Laura Martínez",
+            "email": "laura@pets.com",
+            "password": generate_password_hash("pass202", method='pbkdf2:sha256'),
+            "descripcion": "Peluquería profesional canina y felina.",
+            "ubicacion": "Lomas de Zamora, Buenos Aires",
+            "lat": -34.7480,
+            "lng": -58.4530,
+            "rating": 4.7,
+            "servicios": ["Peluquería", "Baño", "Corte de uñas"],
+            },
+            {
+            "nombre": "Javier Domínguez",
+            "email": "javier@pets.com",
+            "password": generate_password_hash("pass303", method='pbkdf2:sha256'),
+            "descripcion": "Paseos diarios en grupo pequeños y seguros.",
+            "ubicacion": "Quilmes, Buenos Aires",
+            "lat": -34.7190,
+            "lng": -58.2580,
+            "rating": 4.6,
+            "servicios": ["Paseos", "Visitas a domicilio"],
+            },
+            {
+            "nombre": "Verónica Sosa",
+            "email": "veronica@pets.com",
+            "password": generate_password_hash("pass404", method='pbkdf2:sha256'),
+            "descripcion": "Experiencia con animales mayores y post-operatorios.",
+            "ubicacion": "Florencio Varela, Buenos Aires",
+            "lat": -34.7680,
+            "lng": -58.2620,
+            "rating": 4.9,
+            "servicios": ["Cuidado Especializado", "Rehabilitación", "Paseos"],
+            },
+            {
+            "nombre": "Martín Roldán",
+            "email": "martin@pets.com",
+            "password": generate_password_hash("pass505", method='pbkdf2:sha256'),
+            "descripcion": "Ofrezco guardería canina durante todo el día.",
+            "ubicacion": "Temperley, Buenos Aires",
+            "lat": -34.7620,
+            "lng": -58.4220,
+            "rating": 4.3,
+            "servicios": ["Guardería", "Paseos", "Alojamiento"],
+            }   ,
+            {
+            "nombre": "Lucía Benítez",
+            "email": "lucia@pets.com",
+            "password": generate_password_hash("pass606", method='pbkdf2:sha256'),
+            "descripcion": "Cuido gatos con experiencia en alimentación especializada.",
+            "ubicacion": "Adrogué, Buenos Aires",
+            "lat": -34.7625,
+            "lng": -58.4280,
+            "rating": 4.7,
+            "servicios": ["Cuidado de gatos", "Alimentación especializada"],
+            },
+            {
+            "nombre": "Nicolás Ortega",
+            "email": "nicolas@pets.com",
+            "password": generate_password_hash("pass707", method='pbkdf2:sha256'),
+            "descripcion": "Servicio de transporte pet friendly desde y hacia zoológicos y clínicas.",
+            "ubicacion": "Wilde, Buenos Aires",
+            "lat": -34.7120,
+            "lng": -58.3860,
+            "rating": 4.6,
+            "servicios": ["Transporte", "Paseos"],
+            },
+            {
+            "nombre": "Patricia Duarte",
+            "email": "patricia@pets.com",
+            "password": generate_password_hash("pass808", method='pbkdf2:sha256'),
+            "descripcion": "Cuido mascotas en mi hogar familiar. Tienen espacio interior y exterior.",
+            "ubicacion": "Valentín Alsina, Buenos Aires",
+            "lat": -34.7150,
+            "lng": -58.3840,
+            "rating": 4.5,
+            "servicios": ["Alojamiento", "Paseos", "Guardería"],
+            },
+            {
+            "nombre": "Roberto Ledesma",
+            "email": "roberto@pets.com",
+            "password": generate_password_hash("pass909", method='pbkdf2:sha256'),
+            "descripcion": "Especialista en perros grandes y de raza pura.",
+            "ubicacion": "Sarandí, Buenos Aires",
+            "lat": -34.7140,
+            "lng": -58.3800,
+            "rating": 4.8,
+            "servicios": ["Cuidado Especializado", "Alojamiento", "Paseos"],
+            },
+            {
+            "nombre": "Mariana Juárez",
+            "email": "mariana@pets.com",
+            "password": generate_password_hash("pass1010", method='pbkdf2:sha256'),
+            "descripcion": "Ofrezco servicios personalizados para mascotas nerviosas o con miedo a personas nuevas.",
+            "ubicacion": "Claypole, Buenos Aires",
+            "lat": -34.7840,
+            "lng": -58.4150,
+            "rating": 4.4,
+            "servicios": ["Cuidado Especializado", "Paseos"],
+            },
+            {
+            "nombre": "Fernando Acosta",
+            "email": "fernando@pets.com",
+            "password": generate_password_hash("pass1111", method='pbkdf2:sha256'),
+            "descripcion": "Guardería canina con juegos y monitores profesionales.",
+            "ubicacion": "Ezeiza, Buenos Aires",
+            "lat": -34.8000,
+            "lng": -58.5000,
+            "rating": 4.2,
+            "servicios": ["Guardería", "Paseos", "Entrenamiento básico"],
+            },
+            {
+            "nombre": "Sofía Ávila",
+            "email": "sofia@pets.com",
+            "password": generate_password_hash("pass1212", method='pbkdf2:sha256'),
+            "descripcion": "Tengo experiencia con mascotas que requieren medicación constante.",
+            "ubicacion": "Esteban Echeverría, Buenos Aires",
+            "lat": -34.8200,
+            "lng": -58.4500,
+            "rating": 4.7,
+            "servicios": ["Cuidado Especializado", "Alojamiento"],
+            },
+            {
+            "nombre": "Hugo Almada",
+            "email": "hugo@pets.com",
+            "password": generate_password_hash("pass1313", method='pbkdf2:sha256'),
+            "descripcion": "Cuido gatos y perros en un entorno tranquilo y seguro.",
+            "ubicacion": "San Francisco Solano, Buenos Aires",
+            "lat": -34.7200,
+            "lng": -58.3800,
+            "rating": 4.5,
+            "servicios": ["Alojamiento", "Paseos", "Guardería"],
+            },
+            {
+            "nombre": "Carla Márquez",
+            "email": "carla@pets.com",
+            "password": generate_password_hash("pass1414", method='pbkdf2:sha256'),
+            "descripcion": "Espacio amplio y techado ideal para mascotas alérgicas al sol.",
+            "ubicacion": "Rafael Calzada, Buenos Aires",
+            "lat": -34.7500,
+            "lng": -58.4100,
+            "rating": 4.6,
+            "servicios": ["Alojamiento", "Guardería", "Peluquería"],
+            },
+            {
+            "nombre": "Alejandro Salinas",
+            "email": "alejandro@pets.com",
+            "password": generate_password_hash("pass1515", method='pbkdf2:sha256'),
+            "descripcion": "Paseos temprano en la mañana y tarde-noche.",
+            "ubicacion": "Ciudad Evita, Buenos Aires",
+            "lat": -34.7300,
+            "lng": -58.4000,
+            "rating": 4.3,
+            "servicios": ["Paseos", "Guardería"],
+            },
+            {
+            "nombre": "Romina Vega",
+            "email": "romina@pets.com",
+            "password": generate_password_hash("pass1616", method='pbkdf2:sha256'),
+            "descripcion": "Trabajo con veterinarios locales para brindar servicio completo.",
+            "ubicacion": "Gerli, Buenos Aires",
+            "lat": -34.7000,
+            "lng": -58.3900,
+            "rating": 4.7,
+            "servicios": ["Cuidado Especializado", "Alojamiento", "Peluquería", "Paseos"],
+            },
+            {
+            "nombre": "Agustín Funes",
+            "email": "agustin@pets.com",
+            "password": generate_password_hash("pass1717", method='pbkdf2:sha256'),
+            "descripcion": "Cuido perros de razas pequeñas y medianas en mi departamento espacioso.",
+            "ubicacion": "Piñeyro, Buenos Aires",
+            "lat": -34.7300,
+            "lng": -58.3700,
+            "rating": 4.4,
+            "servicios": ["Alojamiento", "Paseos"],
+            },
+            {
+            "nombre": "Paula Navarro",
+            "email": "paula@pets.com",
+            "password": generate_password_hash("pass1818", method='pbkdf2:sha256'),
+            "descripcion": "Amo los gatos y ofrezco hospedaje silencioso y sin perros.",
+            "ubicacion": "Don Torcuato, Buenos Aires",
+            "lat": -34.4980,
+            "lng": -58.5680,
+            "rating": 4.8,
+            "servicios": ["Cuidado de gatos", "Guardería"],
+            },
+            {
+            "nombre": "Facundo Bravo",
+            "email": "facundo@pets.com",
+            "password": generate_password_hash("pass1919", method='pbkdf2:sha256'),
+            "descripcion": "Mi casa tiene un jardín grande y hago paseos controlados.",
+            "ubicacion": "Bernal, Buenos Aires",
+            "lat": -34.7200,
+            "lng": -58.3800,
+            "rating": 4.6,
+            "servicios": ["Alojamiento", "Paseos", "Guardería"],
+            },
+            {
+            "nombre": "Damián Rojas",
+            "email": "damian@pets.com",
+            "password": generate_password_hash("pass2020", method='pbkdf2:sha256'),
+            "descripcion": "Experiencia con cachorros y entrenamiento básico.",
+            "ubicacion": "Villa Dominico, Buenos Aires",
+            "lat": -34.7000,
+            "lng": -58.3900,
+            "rating": 4.5,
+            "servicios": ["Paseos", "Entrenamiento", "Alojamiento"],
+            },
+            {
+            "nombre": "Belén Cáceres",
+            "email": "belen@pets.com",
+            "password": generate_password_hash("pass2121", method='pbkdf2:sha256'),
+            "descripcion": "Cuido mascotas en mi casa con sistema de cámaras disponibles las 24hs.",
+            "ubicacion": "Monte Chingolo, Buenos Aires",
+            "lat": -34.7200,
+            "lng": -58.3700,
+            "rating": 4.6,
+            "servicios": ["Alojamiento", "Visitas a domicilio"],
+            },
+            {
+            "nombre": "Tomás León",
+            "email": "tomas@pets.com",
+            "password": generate_password_hash("pass2222", method='pbkdf2:sha256'),
+            "descripcion": "Ofrezco masajes relajantes y terapias naturales.",
+            "ubicacion": "Dock Sud, Buenos Aires",
+            "lat": -34.7300,
+            "lng": -58.4100,
+            "rating": 4.3,
+            "servicios": ["Cuidado Especializado", "Paseos", "Masajes"],
+            },
+            {
+            "nombre": "Inés Bustamante",
+            "email": "ines@pets.com",
+            "password": generate_password_hash("pass2323", method='pbkdf2:sha256'),
+            "descripcion": "Tengo experiencia con perros sordos, ciegos o discapacitados.",
+            "ubicacion": "José Mármol, Buenos Aires",
+            "lat": -34.7400,
+            "lng": -58.4100,
+            "rating": 4.9,
+            "servicios": ["Cuidado Especializado", "Paseos", "Alojamiento"],
+            },
+            {
+            "nombre": "Santiago Núñez",
+            "email": "santiago@pets.com",
+            "password": generate_password_hash("pass2424", method='pbkdf2:sha256'),
+            "descripcion": "Mis mascotas viven como si estuvieran en su propia casa.",
+            "ubicacion": "Ezeiza, Buenos Aires",
+            "lat": -34.8000,
+            "lng": -58.5000,
+            "rating": 4.7,
+            "servicios": ["Alojamiento", "Paseos", "Guardería"],
+            },
+            {
+            "nombre": "Camila Ochoa",
+            "email": "camila@pets.com",
+            "password": generate_password_hash("pass2525", method='pbkdf2:sha256'),
+            "descripcion": "Soy médica veterinaria y ofrezco cuidados profesionales y atención médica básica.",
+            "ubicacion": "Adrogué, Buenos Aires",
+            "lat": -34.7625,
+            "lng": -58.4280,
+            "rating": 4.9,
+            "servicios": ["Cuidado Especializado", "Alojamiento", "Peluquería"],
+            },
+            {
+            "nombre": "Luciano Franco",
+            "email": "luciano@pets.com",
+            "password": generate_password_hash("pass2626", method='pbkdf2:sha256'),
+            "descripcion": "Tengo experiencia con perros agresivos o con ansiedad por separación.",
+            "ubicacion": "Lanús, Buenos Aires",
+            "lat": -34.7062,
+            "lng": -58.3900,
+            "rating": 4.8,
+            "servicios": ["Cuidado Especializado", "Alojamiento", "Entrenamiento"],
+            },
+            {
+            "nombre": "Celeste Ibarra",
+            "email": "celeste@pets.com",
+            "password": generate_password_hash("pass2727", method='pbkdf2:sha256'),
+            "descripcion": "Ofrezco servicios de peluquería y spa para mascotas.",
+            "ubicacion": "Wilde, Buenos Aires",
+            "lat": -34.7120,
+            "lng": -58.3860,
+            "rating": 4.6,
+            "servicios": ["Peluquería", "Spa", "Paseos"],
+            },
+            {
+            "nombre": "Andrés Mena",
+            "email": "andres@pets.com",
+            "password": generate_password_hash("pass2828", method='pbkdf2:sha256'),
+            "descripcion": "Cuido mascotas en una finca amplia con acceso a áreas verdes y sombra.",
+            "ubicacion": "Florencio Varela, Buenos Aires",
+            "lat": -34.7680,
+            "lng": -58.2620,
+            "rating": 4.5,
+            "servicios": ["Alojamiento", "Paseos", "Guardería"],
+            },
+            {
+            "nombre": "Daniela Soria",
+            "email": "daniela@pets.com",
+            "password": generate_password_hash("pass2929", method='pbkdf2:sha256'),
+            "descripcion": "Tengo experiencia con mascotas alérgicas y dietas especiales.",
+            "ubicacion": "Claypole, Buenos Aires",
+            "lat": -34.7840,
+            "lng": -58.4150,
+            "rating": 4.7,
+            "servicios": ["Cuidado Especializado", "Alojamiento", "Paseos"],
+            },
+            {
+            "nombre": "Sebastián Lagos",
+            "email": "sebas@pets.com",
+            "password": generate_password_hash("pass3030", method='pbkdf2:sha256'),
+            "descripcion": "Transporte puerta a puerta con vehículos adaptados para mascotas.",
+            "ubicacion": "Valentín Alsina, Buenos Aires",
+            "lat": -34.7150,
+            "lng": -58.3840,
+            "rating": 4.6,
+            "servicios": ["Transporte", "Paseos", "Visitas a domicilio"],
+            }
+        ]
+
+
+
+
+    
+
+    cuidador_ids = []
+
+    for cuidador in cuidadores_datos:
+        cursor.execute("""
+            INSERT INTO usuarios (nombre, email, password, tipo_usuario)
+            VALUES (%s, %s, %s, 'cuidador')
+        """, (cuidador["nombre"], cuidador["email"], cuidador["password"]))
+        usuario_id = cursor.lastrowid
+        cuidador_ids.append(usuario_id)
+
+        cursor.execute("""
+            INSERT INTO cuidadores (usuario_id, descripcion, ubicacion, lat, lng, rating)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (
+            usuario_id,
+            cuidador["descripcion"],
+            cuidador["ubicacion"],
+            cuidador["lat"],
+            cuidador["lng"],
+            cuidador["rating"]
+        ))
+
+        for servicio in cuidador["servicios"]:
+            cursor.execute("""
+                INSERT INTO servicios_cuidadores (cuidador_id, servicio)
+                VALUES (%s, %s)
+            """, (usuario_id, servicio))
+
+    print("🐾 Cuidadores y servicios insertados.")
+
+    # Reseñas de ejemplo
+    reseña_textos = [
+        "Servicio rápido y eficiente. Totalmente satisfecho.",
+        "El lugar es seguro y amplio. Muy buena experiencia.",
+        "Tienen mucha paciencia con los animales. Excelente trabajo.",
+        "Muy buen trato, atención personalizada y constante.",
+        "Profesionalismo y cariño con mis mascotas. Volveré a usar sus servicios.",
+        "Siempre me mantuvo informado del estado de mi mascota.",
+        "Amor y dedicación en cada momento. ¡Gracias!",
+        "Muy limpio y organizado. Todo bajo control.",
+        "Mis mascotas están felices después de su estadía.",
+        "Trato amoroso y respetuoso. Altamente recomendado.",
+        "Muy buen ambiente y espacio para jugar.",
+        "Cuidó a mi mascota enferma con mucho mimo y responsabilidad.",
+        "Servicio impecable. Superó mis expectativas.",
+        "Muy atento y comprometido con el bienestar animal.",
+        "Dejé a mi perro por trabajo y volvió más feliz que nunca.",
+        "Gran atención al detalle. Mi mascota comió muy bien y durmió tranquila.",
+        "Un lugar seguro y lleno de amor. Lo recomiendo sin dudar.",
+        "Me encantó cómo interactuó con mi gato tímido. Excelente manejo.",
+        "Paseos diarios, comida balanceada y mucho cariño. ¡Impecable!",
+        "Muy profesional y puntual. Comunicación fluida y clara."
+    ]
+
+    reseñas_datos = []
+    for i in range(30):
+        cliente_id = random.choice(cliente_ids) if cliente_ids else None
+        cuidador_id = random.choice(cuidador_ids) if cuidador_ids else None
+        texto = random.choice(reseña_textos)
+        calificacion = round(random.uniform(4.5, 5), 1)  # Entre 4.5 y 5 estrellas
+        reseñas_datos.append((cuidador_id, cliente_id, texto, int(calificacion)))
+
+    cursor.executemany("""
+        INSERT INTO reseñas (cuidador_id, cliente_id, texto, calificacion)
+        VALUES (%s, %s, %s, %s)
+    """, reseñas_datos)
+    print("⭐ Reseñas insertadas correctamente.")
+
+    # Administrador
+    cursor.execute("""
+        SELECT COUNT(*) AS count FROM usuarios WHERE tipo_usuario = 'admin'
+    """)
+    if cursor.fetchone()['count'] == 0:
+        hashed = generate_password_hash("admin", method='pbkdf2:sha256')
+        cursor.execute("""
+            INSERT INTO usuarios (nombre, email, password, tipo_usuario)
+            VALUES (%s, %s, %s, 'admin')
+        """, ("Administrador", "admin@admin.com", hashed))
+        print("👮‍♂️ Usuario administrador creado.")
+
+    print("🎉 Datos iniciales insertados exitosamente.")
+
+# --- FUNCIÓN PRINCIPAL ---
+def main():
+    try:
+        conn = conectar()
+        with conn.cursor() as cursor:
+            crear_tablas(cursor)
+            insertar_datos_iniciales(cursor)
+        conn.commit()
+        print("🎉 Inicialización completada exitosamente.")
+    except Exception as e:
+        print(f"❌ Error al inicializar la base de datos: {e}")
+    finally:
+        conn.close()
+
+if __name__ == "__main__":
+    main()
